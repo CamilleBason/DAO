@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -80,8 +81,29 @@ public class DAO {
 	 * @throws DAOException
 	 */
 	public int numberOfOrdersForCustomer(int customerId) throws DAOException {
-		throw new UnsupportedOperationException("Pas encore implémenté");
-	}
+            int result = 0;
+        String sql = "Select count(*) as NUMBER from PURCHASE_ORDER WHERE CUSTOMER_ID = ?";
+        try ( Connection connection = myDataSource.getConnection();
+                PreparedStatement stmt = connection.prepareStatement(sql) 
+               
+                ) {
+            stmt.setInt(1, customerId);
+            
+            try (ResultSet rs = stmt.executeQuery()){
+            rs.next(); // Pas la peine de faire while, il y a 1 seul enregistrement
+                    // On récupère le champ NUMBER de l'enregistrement courant
+            result = rs.getInt("NUMBER");
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger("DAO").log(Level.SEVERE, null, ex);
+            throw new DAOException(ex.getMessage());
+        }
+
+        return result;
+    }
+            
+//throw new UnsupportedOperationException("Pas encore implémenté");
+	
 
 	/**
 	 * Trouver un Customer à partir de sa clé
@@ -91,8 +113,29 @@ public class DAO {
 	 * @throws DAOException
 	 */
 	CustomerEntity findCustomer(int customerID) throws DAOException {
-		throw new UnsupportedOperationException("Pas encore implémenté");
-	}
+             CustomerEntity result;
+        String sql = "Select * from CUSTOMER WHERE CUSTOMER_ID = ?";
+        try ( Connection connection = myDataSource.getConnection();
+                PreparedStatement stmt = connection.prepareStatement(sql) 
+               
+                ) {
+            stmt.setInt(1, customerID);
+            
+            try (ResultSet rs = stmt.executeQuery()){
+            rs.next(); // Pas la peine de faire while, il y a 1 seul enregistrement
+                    // On récupère le champ NUMBER de l'enregistrement courant
+            result = new CustomerEntity(rs.getInt("CUSTOMER_ID"),rs.getString("NAME"),rs.getString("ADDRESSLINE1"));
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger("DAO").log(Level.SEVERE, null, ex);
+            throw new DAOException(ex.getMessage());
+        }
+
+        return result;
+    }
+		
+                
+	
 
 	/**
 	 * Liste des clients localisés dans un état des USA
@@ -101,8 +144,30 @@ public class DAO {
 	 * @return la liste des clients habitant dans cet état
 	 * @throws DAOException
 	 */
-	List<CustomerEntity> customersInState(String state) throws DAOException {
-		throw new UnsupportedOperationException("Pas encore implémenté");
-	}
+	   List<CustomerEntity> customersInState(String state) throws DAOException {
+
+        ArrayList<CustomerEntity> result = new ArrayList();
+        String sql = "Select * from CUSTOMER WHERE STATE= ?";
+               try (Connection connection = myDataSource.getConnection();
+                       PreparedStatement stmt = connection.prepareStatement(sql)) {
+                   stmt.setString(1, state);
+               
+
+                   try (ResultSet rs = stmt.executeQuery()) {
+                       while (rs.next()) { // Pas la peine de faire while, il y a 1 seul enregistrement
+                           // On récupère le champ NUMBER de l'enregistrement courant
+                           result.add(new CustomerEntity(rs.getInt("CUSTOMER_ID"), rs.getString("NAME"), rs.getString("ADDRESSLINE1")));
+                       }
+                   } 
+                    return result;
+               }
+                   catch (SQLException ex) {
+                       Logger.getLogger("DAO").log(Level.SEVERE, null, ex);
+                       throw new DAOException(ex.getMessage());
+                   }
+
+              
+    }
 
 }
+
